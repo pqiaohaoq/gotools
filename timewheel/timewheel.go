@@ -8,7 +8,7 @@ import (
 
 	"github.com/panjf2000/ants/v2"
 
-	"go-tools/cmap"
+	"github.com/qiaohao9/gotools/cmap"
 )
 
 var (

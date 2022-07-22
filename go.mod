@@ -1,4 +1,4 @@
-module go-tools
+module github.com/qiaohao9/gotools
 
 go 1.15
 
