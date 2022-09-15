@@ -1,0 +1,20 @@
+run:
+  tests: false
+  modules-download-mode: readonly
+  allow-parallel-runners: true
+
+linters:
+  disable-all: true
+  enable:
+    - revive
+
+linters-settings:
+  revive:
+    ignore-generated-header: true
+    enable-all-rules: false
+    rules:
+      - name: atomic
+      - name: datarace
+      - name: error-return
+      - name: error-strings
+      - name: errorf
