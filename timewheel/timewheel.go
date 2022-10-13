@@ -70,7 +70,6 @@ type TimeWheel struct {
 
 	taskGoroutine  *ants.Pool
 	taskConcurrent int
-	isRunning      bool
 }
 
 type Option func(options *Options)
@@ -168,7 +167,7 @@ func (tw *TimeWheel) AddTask(delay time.Duration, key string, task *Task) error 
 		return errors.New("parameter 'delay' must be larger than zero")
 	}
 
-	if delay <= tw.interval {
+	if delay < tw.interval {
 		return fmt.Errorf("parameter 'delay'=%d should not less than interval=%d", delay, tw.interval)
 	}
 
@@ -193,8 +192,8 @@ func (tw *TimeWheel) getPositionAndCircle(d time.Duration) (position int, circle
 	delaySeconds := d.Milliseconds()
 	intervalSeconds := tw.interval.Milliseconds()
 
-	circle = int(delaySeconds/intervalSeconds) / tw.slotNum
-	position = (tw.currentPosition + int(delaySeconds/intervalSeconds)) % tw.slotNum
+	circle = int((delaySeconds-intervalSeconds)/intervalSeconds) / tw.slotNum
+	position = (tw.currentPosition - 1 + int(delaySeconds/intervalSeconds)) % tw.slotNum
 
 	return
 }
@@ -235,9 +234,9 @@ func (tw *TimeWheel) tickHandler() {
 }
 
 func (tw *TimeWheel) scanAndRunTask(tasks *cmap.ConcurrentMap) {
-	for tuple := range tasks.IterBuffered() {
-		key := tuple.Key
-		task := tuple.Value.(*Task)
+	for k, v := range tasks.Items() {
+		key := k
+		task := v.(*Task)
 
 		if task.circle > 0 {
 			task.circle--
@@ -252,9 +251,12 @@ func (tw *TimeWheel) scanAndRunTask(tasks *cmap.ConcurrentMap) {
 		task.end = time.Now()
 		task.elasped = task.end.Sub(task.now)
 
-		tw.taskGoroutine.Submit(func() { task.TimeoutCallback(*task) })
+		_ = tw.taskGoroutine.Submit(func() {
+			tw.timer.Remove(key)
+			tasks.Remove(key)
 
-		tw.timer.Remove(key)
-		tasks.Remove(key)
+			task.TimeoutCallback(*task)
+		})
+
 	}
 }
