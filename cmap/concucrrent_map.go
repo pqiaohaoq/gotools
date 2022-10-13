@@ -109,6 +109,7 @@ func (cm *ConcurrentMap) Items() map[string]interface{} {
 	return temp
 }
 
+// revive:disable:datarace
 func snapshot(cm *ConcurrentMap) (chans []chan Tuple) {
 	chans = make([]chan Tuple, cm.shardNum)
 
