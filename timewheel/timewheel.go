@@ -28,8 +28,8 @@ type TimeWheel struct {
 	currentPosition int
 
 	slotNum     int
-	slots       []*datastructs.SafeMap[*Task]
-	keyPosition *datastructs.SafeMap[int]
+	slots       []*datastructs.SafeMap[string, *Task]
+	keyPosition *datastructs.SafeMap[string, int]
 
 	tickInterval time.Duration
 	ticker       *time.Ticker
@@ -77,7 +77,7 @@ func NewTimeWheel(options ...Option) *TimeWheel {
 	tw := &TimeWheel{
 		slotNum: o.slotNum,
 
-		keyPosition: datastructs.NewSafeMap[int](),
+		keyPosition: datastructs.NewSafeMap[string, int](),
 
 		tickInterval: o.tickerInterval,
 		ticker:       time.NewTicker(o.tickerInterval),
@@ -87,9 +87,9 @@ func NewTimeWheel(options ...Option) *TimeWheel {
 		logger: o.logger,
 	}
 
-	tw.slots = make([]*datastructs.SafeMap[*Task], tw.slotNum)
+	tw.slots = make([]*datastructs.SafeMap[string, *Task], tw.slotNum)
 	for i := range tw.slotNum {
-		tw.slots[i] = datastructs.NewSafeMap[*Task]()
+		tw.slots[i] = datastructs.NewSafeMap[string, *Task]()
 	}
 
 	return tw
