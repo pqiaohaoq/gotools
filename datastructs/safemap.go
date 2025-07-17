@@ -21,6 +21,18 @@ func (sm *SafeMap[K, V]) Get(key K) (V, bool) {
 	return v, ok
 }
 
+func (sm *SafeMap[K, V]) GetOrSet(key K, emptyFunc func() V) V {
+	sm.Lock()
+	v, ok := sm.data[key]
+	if !ok {
+		v = emptyFunc()
+		sm.data[key] = v
+	}
+	sm.Unlock()
+
+	return v
+}
+
 func (sm *SafeMap[K, V]) Set(key K, value V) {
 	sm.Lock()
 	sm.data[key] = value
