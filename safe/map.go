@@ -1,19 +1,19 @@
-package datastructs
+package safe
 
 import (
 	"sync"
 )
 
-type SafeMap[K comparable, V any] struct {
+type Map[K comparable, V any] struct {
 	data map[K]V
 	sync.RWMutex
 }
 
-func NewSafeMap[K comparable, V any]() *SafeMap[K, V] {
-	return &SafeMap[K, V]{data: make(map[K]V)}
+func NewMap[K comparable, V any]() *Map[K, V] {
+	return &Map[K, V]{data: make(map[K]V)}
 }
 
-func (sm *SafeMap[K, V]) Get(key K) (V, bool) {
+func (sm *Map[K, V]) Get(key K) (V, bool) {
 	sm.RLock()
 	v, ok := sm.data[key]
 	sm.RUnlock()
@@ -21,7 +21,7 @@ func (sm *SafeMap[K, V]) Get(key K) (V, bool) {
 	return v, ok
 }
 
-func (sm *SafeMap[K, V]) GetOrSet(key K, emptyFunc func() V) V {
+func (sm *Map[K, V]) GetOrSet(key K, emptyFunc func() V) V {
 	sm.Lock()
 	v, ok := sm.data[key]
 	if !ok {
@@ -33,13 +33,13 @@ func (sm *SafeMap[K, V]) GetOrSet(key K, emptyFunc func() V) V {
 	return v
 }
 
-func (sm *SafeMap[K, V]) Set(key K, value V) {
+func (sm *Map[K, V]) Set(key K, value V) {
 	sm.Lock()
 	sm.data[key] = value
 	sm.Unlock()
 }
 
-func (sm *SafeMap[K, V]) Remove(key K) {
+func (sm *Map[K, V]) Remove(key K) {
 	sm.Lock()
 	delete(sm.data, key)
 	sm.Unlock()
@@ -50,13 +50,13 @@ type Tuple[K comparable, V any] struct {
 	Val V
 }
 
-func (sm *SafeMap[K, V]) IterBuffered() <-chan Tuple[K, V] {
+func (sm *Map[K, V]) IterBuffered() <-chan Tuple[K, V] {
 	buffered := snapshot(sm)
 
 	return buffered
 }
 
-func snapshot[K comparable, V any](sm *SafeMap[K, V]) chan Tuple[K, V] {
+func snapshot[K comparable, V any](sm *Map[K, V]) chan Tuple[K, V] {
 	sm.RLock()
 
 	buffered := make(chan Tuple[K, V], len(sm.data))

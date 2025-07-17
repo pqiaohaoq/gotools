@@ -4,8 +4,8 @@ import (
 	"errors"
 	"sync"
 
-	"github.com/pqiaohaoq/gotools/datastructs"
 	"github.com/pqiaohaoq/gotools/log"
+	"github.com/pqiaohaoq/gotools/safe"
 	"go.uber.org/zap"
 )
 
@@ -22,7 +22,7 @@ var (
 )
 
 type Broadcast struct {
-	topics *datastructs.SafeMap[string, *datastructs.SafeMap[string, *datastructs.SafeChannel[any]]]
+	topics *safe.Map[string, *safe.Map[string, *safe.Channel[any]]]
 	logger log.Logger
 }
 
@@ -67,12 +67,12 @@ func NewBroadcast(opts ...Option) *Broadcast {
 	o := applyOpts(opts)
 
 	return &Broadcast{
-		topics: datastructs.NewSafeMap[string, *datastructs.SafeMap[string, *datastructs.SafeChannel[any]]](),
+		topics: safe.NewMap[string, *safe.Map[string, *safe.Channel[any]]](),
 		logger: o.logger,
 	}
 }
 
-func (bc *Broadcast) Subscribe(topicKey, chanName string, ch *datastructs.SafeChannel[any]) error {
+func (bc *Broadcast) Subscribe(topicKey, chanName string, ch *safe.Channel[any]) error {
 	if topicKey == "" {
 		return ErrTopicKeyIsEmpty
 	}
@@ -83,8 +83,8 @@ func (bc *Broadcast) Subscribe(topicKey, chanName string, ch *datastructs.SafeCh
 		return ErrChanIsNil
 	}
 
-	topic := bc.topics.GetOrSet(topicKey, func() *datastructs.SafeMap[string, *datastructs.SafeChannel[any]] {
-		return datastructs.NewSafeMap[string, *datastructs.SafeChannel[any]]()
+	topic := bc.topics.GetOrSet(topicKey, func() *safe.Map[string, *safe.Channel[any]] {
+		return safe.NewMap[string, *safe.Channel[any]]()
 	})
 
 	// TODO if duplicate topic and chan, will replace old

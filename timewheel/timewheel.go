@@ -5,8 +5,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/pqiaohaoq/gotools/datastructs"
 	"github.com/pqiaohaoq/gotools/log"
+	"github.com/pqiaohaoq/gotools/safe"
 	"go.uber.org/zap"
 )
 
@@ -29,8 +29,8 @@ type TimeWheel struct {
 	currentPosition int
 
 	slotNum     int
-	slots       []*datastructs.SafeMap[string, *Task]
-	keyPosition *datastructs.SafeMap[string, int]
+	slots       []*safe.Map[string, *Task]
+	keyPosition *safe.Map[string, int]
 
 	tickInterval time.Duration
 	ticker       *time.Ticker
@@ -97,7 +97,7 @@ func NewTimeWheel(options ...Option) *TimeWheel {
 	tw := &TimeWheel{
 		slotNum: o.slotNum,
 
-		keyPosition: datastructs.NewSafeMap[string, int](),
+		keyPosition: safe.NewMap[string, int](),
 
 		tickInterval: o.tickerInterval,
 		ticker:       time.NewTicker(o.tickerInterval),
@@ -107,9 +107,9 @@ func NewTimeWheel(options ...Option) *TimeWheel {
 		logger: o.logger,
 	}
 
-	tw.slots = make([]*datastructs.SafeMap[string, *Task], tw.slotNum)
+	tw.slots = make([]*safe.Map[string, *Task], tw.slotNum)
 	for i := range tw.slotNum {
-		tw.slots[i] = datastructs.NewSafeMap[string, *Task]()
+		tw.slots[i] = safe.NewMap[string, *Task]()
 	}
 
 	return tw
