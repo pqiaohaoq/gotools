@@ -2,6 +2,7 @@ package timewheel
 
 import (
 	"errors"
+	"sync"
 	"time"
 
 	"github.com/pqiaohaoq/gotools/datastructs"
@@ -18,9 +19,9 @@ var (
 
 var (
 	defaultOptions = &Options{
-		slotNum:        1000,
+		slotNum:        600, // 1min/circle
 		tickerInterval: 100 * time.Millisecond,
-		logger:         zap.NewNop().Sugar().Named("timewheel"),
+		logger:         zap.NewNop().Sugar(),
 	}
 )
 
@@ -69,6 +70,25 @@ func applyOpts(opts []Option) Options {
 	}
 
 	return o
+}
+
+var (
+	_globalTW = NewTimeWheel()
+	_globalMu sync.RWMutex
+)
+
+func ReplaceGlobals(tw *TimeWheel) {
+	_globalMu.Lock()
+	_globalTW = tw
+	_globalMu.Unlock()
+}
+
+func L() *TimeWheel {
+	_globalMu.RLock()
+	tw := _globalTW
+	_globalMu.RUnlock()
+
+	return tw
 }
 
 func NewTimeWheel(options ...Option) *TimeWheel {
