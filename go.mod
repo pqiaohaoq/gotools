@@ -3,6 +3,7 @@ module github.com/pqiaohaoq/gotools
 go 1.18
 
 require (
+	github.com/orcaman/concurrent-map/v2 v2.0.1
 	github.com/stretchr/testify v1.10.0
 	go.uber.org/zap v1.27.0
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
