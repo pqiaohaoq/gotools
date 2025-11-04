@@ -108,7 +108,7 @@ func NewTimeWheel(options ...Option) *TimeWheel {
 	}
 
 	tw.slots = make([]*safe.Map[string, *Task], tw.slotNum)
-	for i := range tw.slotNum {
+	for i := 0; i < tw.slotNum; i++ {
 		tw.slots[i] = safe.NewMap[string, *Task]()
 	}
 
